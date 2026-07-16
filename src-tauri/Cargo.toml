@@ -1,0 +1,26 @@
+[package]
+name = "stock-widget"
+version = "1.0.0"
+description = "加油努力工具"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "stock_widget_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
+tauri-plugin-store = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+encoding_rs = "0.8"
+tokio = { version = "1", features = ["full"] }
+chrono = "0.4"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
