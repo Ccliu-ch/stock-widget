@@ -1,0 +1,56 @@
+name: Build Windows MSI Installer
+on:
+  push:
+    tags: ["v*"] # 打版本标签自动发布
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 打包生成 MSI
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传打包产物（临时保存）
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi-package
+          path: dist/*.msi
+
+  # 打tag时自动创建Release并上传MSI
+  release:
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 下载打包文件
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: output
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: output/*.msi
+          generate_release_notes: true
+          draft: false
