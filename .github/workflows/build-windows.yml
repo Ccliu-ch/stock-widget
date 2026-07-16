@@ -1,5 +1,6 @@
 name: Build Windows MSI
 
+# 触发规则：tag发布 + 手动调试
 on:
   push:
     tags:
@@ -10,7 +11,7 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      # 按报错提示添加，允许临时使用Node20消除废弃提示
+      # 屏蔽Node20废弃警告
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
       CARGO_TARGET_DIR: src-tauri/target
@@ -20,18 +21,21 @@ jobs:
         with:
           fetch-tags: true
 
+      # Node依赖缓存
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
 
+      # 使用 Node20
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
+      # Rust编译缓存
       - name: Cache Rust
         uses: actions/cache@v3
         with:
@@ -41,12 +45,13 @@ jobs:
             src-tauri/target
           key: ${{ runner.os }}-rust-stable-${{ hashFiles('src-tauri/Cargo.lock') }}
 
-      # 关键修复：删除 windows-gnu，只保留 rust-src
+      # 修复Rust组件冲突
       - name: Setup Stable Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rust-src
 
+      # WiX 标准安装脚本
       - name: Install WiX Toolset v3.11
         run: |
           $wixZip = "wix311-binaries.zip"
@@ -61,6 +66,7 @@ jobs:
       - name: Install npm dependencies
         run: npm install --force
 
+      # 提取版本号
       - name: Extract version from tag
         id: get_version
         run: |
@@ -70,22 +76,29 @@ jobs:
             echo "VERSION=dev" >> $env:GITHUB_ENV
           }
 
+      # Tauri打包MSI，开启详细日志
       - name: Build Tauri MSI Installer
         run: npx tauri build --bundles msi --verbose
 
+      # ========== 核心修复：双路径兼容Tauri1/Tauri2 ==========
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stock-widget-msi-v${{ env.VERSION }}
-          path: src-tauri/target/release/bundle/msi/*.msi
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/windows/*.msi
           retention-days: 90
 
+      # Tag推送自动生成GitHub Release
       - name: Create GitHub Release
         if: env.VERSION != 'dev'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.VERSION }}
-          files: src-tauri/target/release/bundle/msi/*.msi
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/windows/*.msi
           generate_release_notes: true
           draft: false
           prerelease: false
