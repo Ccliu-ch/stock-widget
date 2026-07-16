@@ -1,0 +1,28 @@
+{
+  "name": "stock-widget",
+  "version": "1.0.0",
+  "description": "股票小窗工具 - 跨平台桌面行情监控",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-store": "^2.0.0",
+    "lightweight-charts": "^4.2.0",
+    "pinia": "^2.2.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.1.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vue-tsc": "^2.1.0"
+  }
+}
