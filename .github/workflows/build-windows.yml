@@ -1,0 +1,38 @@
+name: Build Windows MSI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install WiX
+        run: |
+          curl -L https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip -o wix.zip
+          7z x wix.zip -o"C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: npm install --force
+
+      - name: Build MSI
+        run: npx tauri build --bundles msi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-widget-msi
+          path: src-tauri/target/release/bundle/msi/*.msi
