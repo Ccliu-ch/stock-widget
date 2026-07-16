@@ -9,8 +9,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    # 全局开启允许不安全旧Node版本，消除警告
     env:
+      # 按报错提示添加，允许临时使用Node20消除废弃提示
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
       CARGO_TARGET_DIR: src-tauri/target
@@ -26,7 +26,6 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
 
-      # 强制使用 Node 20
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -42,10 +41,11 @@ jobs:
             src-tauri/target
           key: ${{ runner.os }}-rust-stable-${{ hashFiles('src-tauri/Cargo.lock') }}
 
+      # 关键修复：删除 windows-gnu，只保留 rust-src
       - name: Setup Stable Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: windows-gnu
+          components: rust-src
 
       - name: Install WiX Toolset v3.11
         run: |
