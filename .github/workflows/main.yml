@@ -1,39 +1,39 @@
 name: Build Windows MSI
 
-# 双触发：打tag自动发布 + 页面手动运行测试
+# 触发规则：推送v开头tag自动打包发布 + 页面手动运行测试
 on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch: # 手动触发按钮
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     env:
-      # 解决Windows长路径编译报错
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
       CARGO_TARGET_DIR: src-tauri/target
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
-          fetch-tags: true # 读取tag版本号
+          fetch-tags: true
 
-      # 1. Node缓存加速依赖
+      # Node依赖缓存
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node24-${{ hashFiles('package-lock.json') }}
 
-      - name: Setup Node.js 20
+      # 升级Node24 彻底消除废弃警告
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm' # 内置npm缓存
+          node-version: '24'
+          cache: 'npm'
 
-      # 2. Rust工具链缓存，避免重复下载
+      # Rust工具链缓存，加速编译
       - name: Cache Rust
         uses: actions/cache@v3
         with:
@@ -43,31 +43,28 @@ jobs:
             src-tauri/target
           key: ${{ runner.os }}-rust-stable-${{ hashFiles('src-tauri/Cargo.lock') }}
 
+      # 安装稳定Rust，附带Windows编译必备组件
       - name: Setup Stable Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: windows-gnu # Windows编译必备组件
+          components: windows-gnu
 
-      # 3. 修复WiX安装脚本（PowerShell标准写法，目录正确）
+      # 修复WiX安装脚本（PowerShell标准语法，解压目录正确，自动清理压缩包）
       - name: Install WiX Toolset v3.11
         run: |
           $wixZip = "wix311-binaries.zip"
           $wixRoot = "C:\Program Files (x86)\WiX Toolset v3.11"
           $wixBin = "$wixRoot\bin"
-          # 下载压缩包
           curl -L https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip -o $wixZip
-          # 新建完整根目录，解压到根目录而非bin
           New-Item -ItemType Directory -Path $wixRoot -Force
           7z x $wixZip -o"$wixRoot" -y
-          # 将bin目录加入PATH
           Add-Content $env:GITHUB_PATH "$wixBin"
-          # 删除压缩包释放空间
           Remove-Item $wixZip -Force
 
       - name: Install npm dependencies
         run: npm install --force
 
-      # 读取tag版本号，注入环境变量给Tauri
+      # 提取tag版本号，手动构建标记为dev
       - name: Extract version from tag
         id: get_version
         run: |
@@ -77,14 +74,25 @@ jobs:
             echo "VERSION=dev" >> $env:GITHUB_ENV
           }
 
-      # 增加verbose详细日志，仅打包MSI
+      # 打包MSI，开启verbose详细日志方便排错
       - name: Build Tauri MSI Installer
         run: npx tauri build --bundles msi --verbose
 
-      # 制品动态带版本号，区分不同发布包
+      # 上传制品，名称带版本，保留90天
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stock-widget-msi-v${{ env.VERSION }}
           path: src-tauri/target/release/bundle/msi/*.msi
-          retention-days: 90 # 制品保留90天，默认30天
+          retention-days: 90
+
+      # 仅tag发布时自动创建GitHub Release并上传安装包
+      - name: Create GitHub Release
+        if: env.VERSION != 'dev'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          files: src-tauri/target/release/bundle/msi/*.msi
+          generate_release_notes: true
+          draft: false
+          prerelease: false
