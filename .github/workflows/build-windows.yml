@@ -14,7 +14,6 @@ jobs:
       # 屏蔽Node20废弃警告
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
-      CARGO_TARGET_DIR: src-tauri/target
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -80,14 +79,13 @@ jobs:
       - name: Build Tauri MSI Installer
         run: npx tauri build --bundles msi --verbose
 
-      # ========== 核心修复：双路径兼容Tauri1/Tauri2 ==========
+      # Tauri 2 默认将 MSI 输出到 src-tauri/target/release/bundle/msi
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stock-widget-msi-v${{ env.VERSION }}
-          path: |
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/windows/*.msi
+          path: src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error
           retention-days: 90
 
       # Tag推送自动生成GitHub Release
@@ -96,9 +94,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.VERSION }}
-          files: |
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/windows/*.msi
+          files: src-tauri/target/release/bundle/msi/*.msi
           generate_release_notes: true
           draft: false
           prerelease: false
