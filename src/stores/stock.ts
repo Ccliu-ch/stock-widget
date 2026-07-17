@@ -14,8 +14,8 @@ export const useStockStore = defineStore("stock", () => {
   const stockCodes = ref<string[]>([...DEFAULT_STOCKS]);
   const quotes = ref<QuoteData[]>([]);
   const theme = ref<Theme>("dark");
-  const opacity = ref<number>(0.55);
-  const rowSpacing = ref<number>(4);
+  const opacity = ref<number>(0.1);
+  const rowSpacing = ref<number>(2);
   const loading = ref(false);
   const errorMsg = ref("");
 
@@ -23,7 +23,7 @@ export const useStockStore = defineStore("stock", () => {
   const savedOpacity = localStorage.getItem("stock-widget-opacity");
   if (savedOpacity) {
     const val = parseFloat(savedOpacity);
-    if (!isNaN(val) && val >= 0.1 && val <= 1.0) {
+    if (!isNaN(val) && val >= 0.05 && val <= 1.0) {
       opacity.value = val;
     }
   }
@@ -39,16 +39,16 @@ export const useStockStore = defineStore("stock", () => {
 
   function applyOpacity(val: number) {
     document.documentElement.style.setProperty("--opacity", val.toString());
-    // 动态更新 surface 透明度
+    // 极简模式: surface 保持极低透明度,不覆盖颜色
     const isDark = theme.value === "dark";
     const r = isDark ? 19 : 255;
     const g = isDark ? 23 : 255;
     const b = isDark ? 34 : 255;
-    document.documentElement.style.setProperty("--surface", `rgba(${r}, ${g}, ${b}, ${val})`);
+    document.documentElement.style.setProperty("--surface", `rgba(${r}, ${g}, ${b}, ${val * 0.5})`);
     const r2 = isDark ? 28 : 241;
     const g2 = isDark ? 32 : 245;
     const b2 = isDark ? 48 : 249;
-    document.documentElement.style.setProperty("--surface2", `rgba(${r2}, ${g2}, ${b2}, ${val * 0.9})`);
+    document.documentElement.style.setProperty("--surface2", `rgba(${r2}, ${g2}, ${b2}, ${val * 0.3})`);
   }
 
   function setOpacity(val: number) {

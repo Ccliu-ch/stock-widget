@@ -1,41 +1,41 @@
 :root {
-  --bg: #0B0E14;
-  --surface: rgba(19, 23, 34, 0.55);
-  --surface2: rgba(28, 32, 48, 0.5);
-  --surface3: #252A3D;
+  --bg: transparent;
+  --surface: rgba(19, 23, 34, 0.1);
+  --surface2: rgba(28, 32, 48, 0.08);
+  --surface3: rgba(37, 42, 61, 0.4);
   --ink: #E8ECF4;
   --muted: #6B7390;
   --muted2: #4A5170;
-  --border: rgba(255, 255, 255, 0.06);
-  --border2: rgba(255, 255, 255, 0.1);
+  --border: transparent;
+  --border2: transparent;
   --accent: #5B7CFA;
-  --up: #FF4D4F;
-  --up-bg: rgba(255, 77, 79, 0.1);
-  --down: #00C853;
-  --down-bg: rgba(0, 200, 83, 0.1);
-  --opacity: 0.55;
-  --row-padding: 4px;
+  --up: #E8ECF4;
+  --up-bg: transparent;
+  --down: #6B7390;
+  --down-bg: transparent;
+  --opacity: 0.1;
+  --row-padding: 2px;
   --font-sans: -apple-system, "PingFang SC", "SF Pro Text", system-ui, sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
-  --radius: 8px;
-  --radius-lg: 12px;
+  --radius: 4px;
+  --radius-lg: 8px;
 }
 
 :root[data-theme="light"] {
-  --bg: #F5F7FA;
-  --surface: rgba(255, 255, 255, 0.55);
-  --surface2: rgba(241, 245, 249, 0.5);
-  --surface3: #E2E8F0;
+  --bg: transparent;
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface2: rgba(241, 245, 249, 0.08);
+  --surface3: rgba(226, 232, 240, 0.4);
   --ink: #1E293B;
   --muted: #64748B;
   --muted2: #94A3B8;
-  --border: rgba(0, 0, 0, 0.08);
-  --border2: rgba(0, 0, 0, 0.12);
+  --border: transparent;
+  --border2: transparent;
   --accent: #4F6BFF;
-  --up: #E53935;
-  --up-bg: rgba(229, 57, 53, 0.08);
-  --down: #00A848;
-  --down-bg: rgba(0, 168, 72, 0.08);
+  --up: #1A1A1A;
+  --up-bg: transparent;
+  --down: #999999;
+  --down-bg: transparent;
 }
 
 * {
@@ -56,8 +56,8 @@ body {
   background: transparent;
   font-family: var(--font-sans);
   color: var(--ink);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 11px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   user-select: none;
 }
@@ -65,32 +65,32 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 3px;
+  width: 2px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface3);
-  border-radius: 2px;
+  background: transparent;
+  border-radius: 1px;
 }
 
 .up {
   color: var(--up);
 }
 .up-bg {
-  background: var(--up-bg);
+  background: transparent;
   color: var(--up);
 }
 .down {
   color: var(--down);
 }
 .down-bg {
-  background: var(--down-bg);
+  background: transparent;
   color: var(--down);
 }
 
