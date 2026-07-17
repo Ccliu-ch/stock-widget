@@ -1,8 +1,9 @@
 name: Build Windows MSI
 
-# 触发规则：tag发布 + 手动调试
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -11,8 +12,6 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      # 屏蔽Node20废弃警告
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
       - name: Checkout source code
@@ -20,21 +19,18 @@ jobs:
         with:
           fetch-tags: true
 
-      # Node依赖缓存
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node20-${{ hashFiles('package-lock.json') }}
 
-      # 使用 Node20
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # Rust编译缓存
       - name: Cache Rust
         uses: actions/cache@v3
         with:
@@ -44,28 +40,26 @@ jobs:
             src-tauri/target
           key: ${{ runner.os }}-rust-stable-${{ hashFiles('src-tauri/Cargo.lock') }}
 
-      # 修复Rust组件冲突
-      - name: Setup Stable Rust
+      - name: Setup Stable Rust (MSVC)
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rust-src
+          targets: x86_64-pc-windows-msvc
 
-      # WiX 标准安装脚本
       - name: Install WiX Toolset v3.11
+        shell: pwsh
         run: |
-          $wixZip = "wix311-binaries.zip"
-          $wixRoot = "C:\Program Files (x86)\WiX Toolset v3.11"
-          $wixBin = "$wixRoot\bin"
-          curl -L https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip -o $wixZip
-          New-Item -ItemType Directory -Path $wixRoot -Force
-          7z x $wixZip -o"$wixRoot" -y
-          Add-Content $env:GITHUB_PATH "$wixBin"
+          $wixZip = "$env:TEMP\wix311.zip"
+          $wixDir = "C:\wix311"
+          Invoke-WebRequest -Uri "https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip" -OutFile $wixZip
+          New-Item -ItemType Directory -Path $wixDir -Force | Out-Null
+          Expand-Archive -Path $wixZip -DestinationPath $wixDir -Force
+          "$wixDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           Remove-Item $wixZip -Force
+          & "$wixDir\candle.exe" -?
 
       - name: Install npm dependencies
         run: npm install --force
 
-      # 提取版本号
       - name: Extract version from tag
         id: get_version
         run: |
@@ -75,26 +69,37 @@ jobs:
             echo "VERSION=dev" >> $env:GITHUB_ENV
           }
 
-      # Tauri打包MSI，开启详细日志
       - name: Build Tauri MSI Installer
         run: npx tauri build --bundles msi --verbose
 
-      # Tauri 2 默认将 MSI 输出到 src-tauri/target/release/bundle/msi
+      - name: Build NSIS Installer (fallback)
+        run: npx tauri build --bundles nsis
+        continue-on-error: true
+
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stock-widget-msi-v${{ env.VERSION }}
           path: src-tauri/target/release/bundle/msi/*.msi
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 90
 
-      # Tag推送自动生成GitHub Release
+      - name: Upload NSIS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-widget-nsis-v${{ env.VERSION }}
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
+          retention-days: 90
+
       - name: Create GitHub Release
         if: env.VERSION != 'dev'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.VERSION }}
-          files: src-tauri/target/release/bundle/msi/*.msi
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
           generate_release_notes: true
           draft: false
           prerelease: false

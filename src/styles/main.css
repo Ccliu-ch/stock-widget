@@ -1,8 +1,8 @@
 :root {
-  --bg: transparent;
-  --surface: transparent;
-  --surface2: transparent;
-  --surface3: transparent;
+  --bg: rgba(0, 0, 0, 0.01);
+  --surface: rgba(0, 0, 0, 0.01);
+  --surface2: rgba(0, 0, 0, 0.01);
+  --surface3: rgba(0, 0, 0, 0.01);
   --text-alpha: 0.8;
   --ink: rgba(232, 236, 244, var(--text-alpha));
   --muted: rgba(107, 115, 144, var(--text-alpha));
@@ -14,7 +14,7 @@
   --up-bg: transparent;
   --down: rgba(107, 115, 144, calc(var(--text-alpha) * 0.7));
   --down-bg: transparent;
-  --opacity: 0.1;
+  --opacity: 0.8;
   --row-padding: 2px;
   --font-sans: -apple-system, "PingFang SC", "SF Pro Text", system-ui, sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
@@ -23,10 +23,10 @@
 }
 
 :root[data-theme="light"] {
-  --bg: transparent;
-  --surface: transparent;
-  --surface2: transparent;
-  --surface3: transparent;
+  --bg: rgba(255, 255, 255, 0.01);
+  --surface: rgba(255, 255, 255, 0.01);
+  --surface2: rgba(255, 255, 255, 0.01);
+  --surface3: rgba(255, 255, 255, 0.01);
   --ink: rgba(30, 41, 59, var(--text-alpha));
   --muted: rgba(100, 116, 139, var(--text-alpha));
   --muted2: rgba(148, 163, 184, var(--text-alpha));
@@ -54,7 +54,7 @@ body,
 }
 
 body {
-  background: transparent !important;
+  background: var(--bg);
   font-family: var(--font-sans);
   color: var(--ink);
   font-size: 11px;
@@ -66,7 +66,7 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  background: transparent !important;
+  background: var(--surface);
 }
 
 ::-webkit-scrollbar {
