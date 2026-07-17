@@ -57,7 +57,7 @@ function switchView(view: ViewType) {
 </script>
 
 <template>
-  <TitleBar />
+  <TitleBar @manage="showManager" />
   <div class="content">
     <QuoteList
       v-if="currentView === 'list'"

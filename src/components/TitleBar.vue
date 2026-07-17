@@ -7,6 +7,10 @@ import { useStockStore } from "../stores/stock";
 const store = useStockStore();
 const showSettings = ref(false);
 
+const emit = defineEmits<{
+  (e: "manage"): void;
+}>();
+
 async function minimizeToTray() {
   await getCurrentWindow().hide();
 }
@@ -34,6 +38,12 @@ function onRowSpacingChange(e: Event) {
   <div class="titlebar" data-tauri-drag-region>
     <div class="drag-area" data-tauri-drag-region></div>
     <div class="right">
+      <button class="tb-btn" @click="emit('manage')" title="编辑">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </button>
       <button class="tb-btn" @click="toggleSettings" title="设置">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <circle cx="12" cy="12" r="3"/>
@@ -132,11 +142,11 @@ function onRowSpacingChange(e: Event) {
   height: 14px;
   border-radius: 3px;
   background: transparent;
-  color: var(--muted2);
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.4;
+  opacity: 0.6;
   transition: all 0.15s;
 }
 

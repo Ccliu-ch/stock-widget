@@ -20,16 +20,6 @@ function onClickStock(stock: QuoteData) {
 
 <template>
   <div class="quote-list">
-    <div class="header">
-      <h2>我的喜欢</h2>
-      <button class="manage-btn" @click="emit('manage')" title="管理">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 20h9"/>
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </button>
-    </div>
-
     <div class="list">
       <div
         v-for="stock in quotes"
@@ -66,41 +56,10 @@ function onClickStock(stock: QuoteData) {
   overflow: hidden;
 }
 
-.header {
-  padding: 6px 12px 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header h2 {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.manage-btn {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--muted2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.5;
-  transition: opacity 0.15s;
-}
-
-.manage-btn:hover {
-  opacity: 1;
-  color: var(--accent);
-}
-
 .list {
   flex: 1;
   overflow-y: auto;
-  padding: 0 10px 4px;
+  padding: 2px 10px 4px;
 }
 
 .stock-item {
