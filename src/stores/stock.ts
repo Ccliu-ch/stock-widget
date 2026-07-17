@@ -14,7 +14,7 @@ export const useStockStore = defineStore("stock", () => {
   const stockCodes = ref<string[]>([...DEFAULT_STOCKS]);
   const quotes = ref<QuoteData[]>([]);
   const theme = ref<Theme>("dark");
-  const opacity = ref<number>(0.1);
+  const opacity = ref<number>(0.8);
   const rowSpacing = ref<number>(2);
   const loading = ref(false);
   const errorMsg = ref("");
@@ -39,16 +39,8 @@ export const useStockStore = defineStore("stock", () => {
 
   function applyOpacity(val: number) {
     document.documentElement.style.setProperty("--opacity", val.toString());
-    // 极简模式: surface 保持极低透明度,不覆盖颜色
-    const isDark = theme.value === "dark";
-    const r = isDark ? 19 : 255;
-    const g = isDark ? 23 : 255;
-    const b = isDark ? 34 : 255;
-    document.documentElement.style.setProperty("--surface", `rgba(${r}, ${g}, ${b}, ${val * 0.5})`);
-    const r2 = isDark ? 28 : 241;
-    const g2 = isDark ? 32 : 245;
-    const b2 = isDark ? 48 : 249;
-    document.documentElement.style.setProperty("--surface2", `rgba(${r2}, ${g2}, ${b2}, ${val * 0.3})`);
+    // 透明度滑块控制文字透明度,窗口背景始终全透明
+    document.documentElement.style.setProperty("--text-alpha", val.toString());
   }
 
   function setOpacity(val: number) {

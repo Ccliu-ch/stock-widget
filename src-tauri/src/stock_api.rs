@@ -337,8 +337,10 @@ pub async fn search_stocks(keyword: &str) -> Result<Vec<SearchResult>, String> {
                 let name = parts[2].to_string();
                 let stock_type = parts[4].to_string();
                 let full_code = format!("{}{}", market, code_num);
-                // 只保留 A 股 (GP-A / GP-S 等)
-                if stock_type.starts_with("GP") && (market == "sh" || market == "sz") {
+                // 支持 A 股 (GP) 和 ETF/基金 (FD)
+                let is_valid = (stock_type.starts_with("GP") || stock_type.starts_with("FD"))
+                    && (market == "sh" || market == "sz");
+                if is_valid {
                     results.push(SearchResult {
                         code: full_code,
                         name,

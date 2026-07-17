@@ -142,7 +142,7 @@ function onRowSpacingChange(e: Event) {
 
 .tb-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
   color: var(--accent);
 }
 

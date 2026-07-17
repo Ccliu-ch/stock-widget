@@ -114,7 +114,7 @@ function onClickStock(stock: QuoteData) {
 }
 
 .stock-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
 .info {

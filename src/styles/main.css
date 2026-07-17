@@ -1,17 +1,18 @@
 :root {
   --bg: transparent;
-  --surface: rgba(19, 23, 34, 0.1);
-  --surface2: rgba(28, 32, 48, 0.08);
-  --surface3: rgba(37, 42, 61, 0.4);
-  --ink: #E8ECF4;
-  --muted: #6B7390;
-  --muted2: #4A5170;
+  --surface: transparent;
+  --surface2: transparent;
+  --surface3: transparent;
+  --text-alpha: 0.8;
+  --ink: rgba(232, 236, 244, var(--text-alpha));
+  --muted: rgba(107, 115, 144, var(--text-alpha));
+  --muted2: rgba(74, 81, 112, var(--text-alpha));
   --border: transparent;
   --border2: transparent;
-  --accent: #5B7CFA;
-  --up: #E8ECF4;
+  --accent: rgba(91, 124, 250, var(--text-alpha));
+  --up: rgba(232, 236, 244, var(--text-alpha));
   --up-bg: transparent;
-  --down: #6B7390;
+  --down: rgba(107, 115, 144, calc(var(--text-alpha) * 0.7));
   --down-bg: transparent;
   --opacity: 0.1;
   --row-padding: 2px;
@@ -23,18 +24,18 @@
 
 :root[data-theme="light"] {
   --bg: transparent;
-  --surface: rgba(255, 255, 255, 0.1);
-  --surface2: rgba(241, 245, 249, 0.08);
-  --surface3: rgba(226, 232, 240, 0.4);
-  --ink: #1E293B;
-  --muted: #64748B;
-  --muted2: #94A3B8;
+  --surface: transparent;
+  --surface2: transparent;
+  --surface3: transparent;
+  --ink: rgba(30, 41, 59, var(--text-alpha));
+  --muted: rgba(100, 116, 139, var(--text-alpha));
+  --muted2: rgba(148, 163, 184, var(--text-alpha));
   --border: transparent;
   --border2: transparent;
-  --accent: #4F6BFF;
-  --up: #1A1A1A;
+  --accent: rgba(79, 107, 255, var(--text-alpha));
+  --up: rgba(26, 26, 26, var(--text-alpha));
   --up-bg: transparent;
-  --down: #999999;
+  --down: rgba(153, 153, 153, calc(var(--text-alpha) * 0.7));
   --down-bg: transparent;
 }
 
@@ -53,7 +54,7 @@ body,
 }
 
 body {
-  background: transparent;
+  background: transparent !important;
   font-family: var(--font-sans);
   color: var(--ink);
   font-size: 11px;
@@ -65,18 +66,17 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  background: transparent;
+  background: transparent !important;
 }
 
 ::-webkit-scrollbar {
-  width: 2px;
+  width: 0;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: transparent;
-  border-radius: 1px;
 }
 
 .up {
@@ -99,10 +99,12 @@ button {
   cursor: pointer;
   border: none;
   outline: none;
+  background: transparent;
 }
 
 input {
   font-family: var(--font-sans);
   outline: none;
   border: none;
+  background: transparent;
 }

@@ -12,6 +12,39 @@ struct AppState {
     stock_codes: Arc<Mutex<Vec<String>>>,
 }
 
+/// 获取自选股文件路径
+fn get_stock_codes_file(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
+    use std::fs;
+    if let Ok(dir) = app.path().app_config_dir() {
+        let _ = fs::create_dir_all(&dir);
+        Some(dir.join("stock_codes.json"))
+    } else {
+        None
+    }
+}
+
+/// 从文件加载自选股
+fn load_stock_codes_from_file(app: &tauri::AppHandle) -> Option<Vec<String>> {
+    use std::fs;
+    let path = get_stock_codes_file(app)?;
+    if path.exists() {
+        let content = fs::read_to_string(&path).ok()?;
+        serde_json::from_str::<Vec<String>>(&content).ok()
+    } else {
+        None
+    }
+}
+
+/// 保存自选股到文件
+fn save_stock_codes_to_file(app: &tauri::AppHandle, codes: &[String]) {
+    use std::fs;
+    if let Some(path) = get_stock_codes_file(app) {
+        if let Ok(json) = serde_json::to_string_pretty(codes) {
+            let _ = fs::write(&path, json);
+        }
+    }
+}
+
 #[tauri::command]
 async fn fetch_minute_data(code: String) -> Result<serde_json::Value, String> {
     let (points, pre_close) = stock_api::fetch_minute(&code).await?;
@@ -33,10 +66,11 @@ async fn fetch_kline_data(
 }
 
 #[tauri::command]
-fn update_stock_codes(codes: Vec<String>, state: State<'_, AppState>) {
+fn update_stock_codes(codes: Vec<String>, state: State<'_, AppState>, app: tauri::AppHandle) {
     if let Ok(mut guard) = state.stock_codes.lock() {
-        *guard = codes;
+        *guard = codes.clone();
     }
+    save_stock_codes_to_file(&app, &codes);
 }
 
 #[tauri::command]
@@ -112,31 +146,42 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(AppState {
-            stock_codes: Arc::new(Mutex::new(vec![
-                "sh600519".to_string(),
-                "sz000001".to_string(),
-                "sz300750".to_string(),
-                "sz002594".to_string(),
-                "sh601318".to_string(),
-                "sh600036".to_string(),
-                "sz000858".to_string(),
-                "sh601012".to_string(),
-                "sz002415".to_string(),
-                "sh603259".to_string(),
-                "sh600276".to_string(),
-                "sz300760".to_string(),
-                "sz000568".to_string(),
-                "sz000725".to_string(),
-                "sz300059".to_string(),
-                "sh688981".to_string(),
-                "sz002049".to_string(),
-                "sh601633".to_string(),
-                "sh600690".to_string(),
-                "sh600309".to_string(),
-            ])),
+            stock_codes: Arc::new(Mutex::new(Vec::new())),
         })
         .setup(|app| {
             let state = app.state::<AppState>();
+
+            // 启动时从文件加载自选股,没有文件则用默认列表
+            let saved_codes = load_stock_codes_from_file(&app.handle());
+            let initial_codes = saved_codes.unwrap_or_else(|| {
+                vec![
+                    "sh600519".to_string(),
+                    "sz000001".to_string(),
+                    "sz300750".to_string(),
+                    "sz002594".to_string(),
+                    "sh601318".to_string(),
+                    "sh600036".to_string(),
+                    "sz000858".to_string(),
+                    "sh601012".to_string(),
+                    "sz002415".to_string(),
+                    "sh603259".to_string(),
+                    "sh600276".to_string(),
+                    "sz300760".to_string(),
+                    "sz000568".to_string(),
+                    "sz000725".to_string(),
+                    "sz300059".to_string(),
+                    "sh688981".to_string(),
+                    "sz002049".to_string(),
+                    "sh601633".to_string(),
+                    "sh600690".to_string(),
+                    "sh600309".to_string(),
+                ]
+            });
+
+            if let Ok(mut guard) = state.stock_codes.lock() {
+                *guard = initial_codes;
+            }
+
             let codes_arc = state.stock_codes.clone();
             start_polling(app.handle().clone(), codes_arc);
 
